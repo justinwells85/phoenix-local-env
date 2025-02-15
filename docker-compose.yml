@@ -1,0 +1,33 @@
+version: "3.8"
+
+services:
+  firebird-db:
+    image: mysql:8.0
+    container_name: firebird-aurora-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_DATABASE: phoenix_db
+      MYSQL_USER: phoenix_user
+      MYSQL_PASSWORD: Pass123!
+    ports:
+      - "3306:3306"
+    volumes:
+      - firebird_mysql_data:/var/lib/mysql
+
+  phoenix-nest:
+    image: localstack/localstack
+    container_name: phoenix-localstack
+    restart: always
+    ports:
+      - "4566:4566"
+    environment:
+      - SERVICES=s3,lambda,apigateway,dynamodb,iam
+      - GATEWAY_LISTEN=4566      
+    volumes:
+      - "/var/run/docker.sock:/var/run/docker.sock"
+      - phoenix_localstack_data:/tmp/localstack"
+
+volumes:
+  firebird_mysql_data:
+  phoenix_localstack_data:
