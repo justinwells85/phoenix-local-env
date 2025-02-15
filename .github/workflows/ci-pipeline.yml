@@ -27,9 +27,9 @@ jobs:
       - name: Wait for services to start
         run: sleep 15
 
-      # ✅ Verify MySQL Container
+      # ✅ Verify MySQL Container (🚀 Fix: Remove `-it`)
       - name: Check MySQL Container
-        run: docker exec -it firebird-aurora-mysql mysql -u phoenix_user --password=${{ secrets.MYSQL_PASSWORD }} -e "SHOW DATABASES;"
+        run: docker exec firebird-aurora-mysql mysql -u phoenix_user --password=${{ secrets.MYSQL_PASSWORD }} -e "SHOW DATABASES;"
 
       # ✅ Verify LocalStack Services
       - name: Check LocalStack Services
