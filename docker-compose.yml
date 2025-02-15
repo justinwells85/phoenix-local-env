@@ -1,15 +1,13 @@
-version: "3.8"
-
 services:
   firebird-db:
     image: mysql:8.0
     container_name: firebird-aurora-mysql
     restart: always
     environment:
-      MYSQL_ROOT_PASSWORD: rootpass
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-rootpass}
       MYSQL_DATABASE: phoenix_db
       MYSQL_USER: phoenix_user
-      MYSQL_PASSWORD: Pass123!
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?MYSQL_PASSWORD not set}
     ports:
       - "3306:3306"
     volumes:
