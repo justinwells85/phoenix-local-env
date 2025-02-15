@@ -4,38 +4,54 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build-test:
-    runs-on: ubuntu-latest  # ✅ Stick with Ubuntu for efficiency
+    runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      # ✅ Install Docker Compose
-      - name: Install Docker Compose
+      - name: Set up Docker Compose
         run: |
           sudo apt-get update
           sudo apt-get install -y docker-compose
 
-      # ✅ Start Phoenix Environment
-      - name: Start Phoenix Environment
+      - name: Start Phoenix Environment (Docker Compose)
         run: docker-compose up -d
 
-      # ✅ Wait for services to initialize
-      - name: Wait for services to start
-        run: sleep 15
+      - name: Wait for Services to Start
+        run: sleep 10  # Adjust as needed
 
-      # ✅ Verify MySQL Container (🚀 Fix: Remove `-it`)
-      - name: Check MySQL Container
-        run: docker exec firebird-aurora-mysql mysql -u phoenix_user --password=${{ secrets.MYSQL_PASSWORD }} -e "SHOW DATABASES;"
+      - name: Set AWS Environment Variables
+        run: |
+          echo "AWS_ACCESS_KEY_ID=test" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=test" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=us-east-1" >> $GITHUB_ENV
 
-      # ✅ Verify LocalStack Services
-      - name: Check LocalStack Services
+      - name: Configure AWS CLI for LocalStack
+        run: |
+          mkdir -p ~/.aws
+          echo "[localstack]" > ~/.aws/config
+          echo "region = us-east-1" >> ~/.aws/config
+          echo "[localstack]" > ~/.aws/credentials
+          echo "aws_access_key_id = test" >> ~/.aws/credentials
+          echo "aws_secret_access_key = test" >> ~/.aws/credentials
+
+      - name: Verify MySQL Database
+        run: |
+          docker exec firebird-aurora-mysql mysql -u phoenix_user --password=Pass123! --silent -e "SHOW DATABASES;"
+
+      - name: Verify S3 in LocalStack
         run: aws --endpoint-url=http://localhost:4566 s3 ls --profile localstack
 
-      # ✅ Stop Phoenix Environment (Optional)
-      - name: Stop Phoenix Environment
-        run: docker-compose down
+      - name: Verify DynamoDB in LocalStack
+        run: aws --endpoint-url=http://localhost:4566 dynamodb list-tables --profile localstack
+
+      - name: Clean Up
+	run: docker-compose down
 
